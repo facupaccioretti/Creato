@@ -310,9 +310,11 @@ function Comparison({
 }) {
   return (
     <div
-      className={`rounded-3xl border p-6 md:p-8 ${
-        icon === "check" ? "on-dark bg-navy text-white" : "bg-white text-navy"
-      } ${icon === "check" ? "border-navy" : "border-navy/10 shadow-[0_18px_60px_rgba(23,23,23,.07)]"} ${className ?? ""}`}
+      className={`rounded-3xl border p-6 transition-all duration-300 md:p-8 ${
+        icon === "check"
+          ? "on-dark border-white/15 bg-graphite text-white shadow-[0_20px_50px_rgba(0,0,0,0.35),0_0_35px_rgba(233,109,69,0.18)] hover:-translate-y-1 hover:border-orange/60 hover:shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_45px_rgba(233,109,69,0.25)]"
+          : "border-navy/10 bg-white text-navy shadow-[0_18px_60px_rgba(23,23,23,.07)]"
+      } ${className ?? ""}`}
     >
       <h3 className="font-heading text-lg font-semibold">{title}</h3>
       <ul className="mt-4 flex flex-col gap-2.5 text-sm md:gap-3 md:text-base">

@@ -30,7 +30,12 @@ export function Process() {
 
   return (
     <section ref={sectionRef} aria-labelledby="proceso-title" id="proceso" className="relative overflow-hidden bg-white px-6 py-20 md:px-10 md:py-28">
-      <div className="mx-auto max-w-7xl">
+      {/* Fondo de grilla que se difumina */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(23,23,23,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,23,23,0.035)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_75%_75%_at_50%_50%,black_35%,transparent_85%)]" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl">
         <header className="grid gap-5 border-b border-navy/15 pb-8 lg:grid-cols-[.85fr_1.15fr] lg:items-end">
           <div>
             <p className="section-kicker">De la idea a la obra</p>
