@@ -3,7 +3,7 @@ export const COMPANY_NAME = "creato"
 export const WHATSAPP_URL =
   "https://wa.me/549351XXXXXXX?text=Hola%2C%20quiero%20presupuestar%20con%20ustedes"
 export const SCHEDULE_URL = "https://calendly.com/PLACEHOLDER"
-export const CONTACT_EMAIL = "creatoconsultoria@gmail.com"
+export const CONTACT_EMAIL = "creatoconsultora@gmail.com"
 
 export type Pillar = {
   id: string

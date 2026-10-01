@@ -109,6 +109,7 @@
 
   .case-card {
     width: min(82vw, 420px);
+    overscroll-behavior-y: auto;
   }
 
   .case-card .case-cover {
@@ -125,6 +126,7 @@
   #casos .case-card {
     overflow-y: auto;
     scrollbar-width: none;
+    overscroll-behavior-y: auto;
   }
 
   #casos .case-card::-webkit-scrollbar {
@@ -140,9 +142,9 @@
       flex-direction: column;
       overflow-y: auto !important;
       scrollbar-width: none;
+      overscroll-behavior-y: auto;
     }
-    .case-card:hover,
-    .case-card:focus-within {
+    .case-card:hover {
       width: 340px;
       height: 500px;
     }
@@ -164,8 +166,7 @@
       height: 100%;
       min-height: 0;
     }
-    .pillar-item:hover,
-    .pillar-item:focus-within {
+    .pillar-item:hover {
       flex: 4 1 0 !important;
     }
     #pilares > div > ul > .pillar-item {
@@ -178,9 +179,8 @@
       flex: none;
       overflow: visible;
     }
-    .case-card:hover ~ .case-card,
-    .case-card:focus-within ~ .case-card {
-      opacity: .7;
+    .case-track:has(.case-card:hover) .case-card:not(:hover) {
+      opacity: 0.75;
     }
   }
 
@@ -190,8 +190,7 @@
     flex: 1 1 0 !important;
   }
 
-  .pillar-item:hover,
-  .pillar-item:focus-within {
+  .pillar-item:hover {
     flex: 4 1 0 !important;
   }
 
@@ -232,9 +231,7 @@
     }
   }
 
-  #casos .case-card-expanded,
-  #casos .case-card-expanded:hover,
-  #casos .case-card-expanded:focus-within {
+  #casos .case-card-expanded {
     width: 560px !important;
     height: 500px !important;
   }
@@ -285,6 +282,10 @@
   }
   [id] {
     scroll-margin-top: 0;
+  }
+
+  dialog:not([open]) {
+    display: none !important;
   }
 
   dialog[open] ~ * {
