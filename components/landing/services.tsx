@@ -1,21 +1,36 @@
 "use client"
 
-import { Building2, ChevronLeft, ChevronRight, IceCreamCone } from "lucide-react"
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
-import { CASES, PILLARS, WHATSAPP_URL, type CaseStudy } from "@/lib/content"
+import {
+  Building2,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  IceCreamCone,
+  MessageCircle,
+  X,
+} from "lucide-react"
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react"
+import { CASES, PILLARS, SCHEDULE_URL, WHATSAPP_URL, type CaseStudy } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
-function CaseCover({ item }: { item: CaseStudy }) {
+/* -------------------------------------------------------------------------- */
+/*                                CASE COVER                                  */
+/* -------------------------------------------------------------------------- */
+
+function CaseCover({ item, className }: { item: CaseStudy; className?: string }) {
   const [active, setActive] = useState(0)
+
   useEffect(() => {
     if (item.images.length < 2) return
     const timer = window.setInterval(
       () => setActive((value) => (value + 1) % item.images.length),
-      3000
+      3200
     )
     return () => window.clearInterval(timer)
   }, [item.images.length])
+
   const image = item.images[active]
+
   if (!image) {
     const Icon =
       item.id === "heladeria"
@@ -24,190 +39,296 @@ function CaseCover({ item }: { item: CaseStudy }) {
         ? Building2
         : Building2
     return (
-      <div className="flex h-full min-h-0 flex-col justify-end bg-[radial-gradient(#ffffff12_1px,transparent_1px)] [background-size:16px_16px] bg-graphite p-6">
-        <Icon className="mb-auto size-16 text-orange/90" strokeWidth={1} aria-hidden="true" />
-        <p className="font-display text-2xl text-white">{item.shortTitle}</p>
+      <div
+        className={cn(
+          "flex h-full min-h-0 flex-col justify-end bg-[radial-gradient(#ffffff12_1px,transparent_1px)] [background-size:16px_16px] bg-graphite p-5",
+          className
+        )}
+      >
+        <Icon className="mb-auto size-12 text-orange/90" strokeWidth={1.2} aria-hidden="true" />
+        <p className="font-heading text-lg font-semibold text-white">{item.shortTitle}</p>
       </div>
     )
   }
+
   return (
     <div
       role="img"
       aria-label={image.alt}
-      className={`relative h-full min-h-0 shrink-0 bg-white bg-center ${
-        image.kind === "photo" ? "bg-cover" : "bg-contain bg-no-repeat"
-      }`}
+      className={cn(
+        "relative h-full min-h-0 shrink-0 bg-white bg-center transition-all duration-700",
+        image.kind === "photo" ? "bg-cover" : "bg-contain bg-no-repeat",
+        className
+      )}
       style={{ backgroundImage: `url("${image.src}")` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+      {image.label && (
+        <span className="absolute left-3 top-3 rounded-full bg-orange px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-md">
+          {image.label}
+        </span>
+      )}
+      {item.images.length > 1 && (
+        <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[10px] text-white/80 backdrop-blur-sm">
+          {active + 1}/{item.images.length}
+        </span>
+      )}
     </div>
   )
 }
 
-function CaseCard({ item }: { item: CaseStudy }) {
-  const [hovered, setHovered] = useState(false)
-  const cardRef = useRef<HTMLElement>(null)
-  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const message = encodeURIComponent(`Hola, vi el caso "${item.shortTitle}" y quiero algo parecido.`)
+/* -------------------------------------------------------------------------- */
+/*                               CASE MODAL                                   */
+/* -------------------------------------------------------------------------- */
 
-  const handleMouseEnter = () => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
-    // Hover Intent: 130ms delay prevents accidental expansion when scrolling past
-    hoverTimerRef.current = setTimeout(() => {
-      setHovered(true)
-    }, 130)
-  }
-
-  const handleMouseLeave = () => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current)
-      hoverTimerRef.current = null
-    }
-    setHovered(false)
-    if (cardRef.current) {
-      cardRef.current.scrollTo({ top: 0, behavior: "smooth" })
-      if (cardRef.current.contains(document.activeElement)) {
-        (document.activeElement as HTMLElement)?.blur?.()
-      }
-    }
-  }
-
-  const handleBlur = (event: React.FocusEvent<HTMLElement>) => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current)
-      hoverTimerRef.current = null
-    }
-    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-      setHovered(false)
-      if (cardRef.current) {
-        cardRef.current.scrollTo({ top: 0, behavior: "smooth" })
-      }
-    }
-  }
+export function CaseModal({
+  item,
+  open,
+  onClose,
+}: {
+  item: CaseStudy | null
+  open: boolean
+  onClose: () => void
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const [activeImgIndex, setActiveImgIndex] = useState(0)
 
   useEffect(() => {
-    return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
+    setActiveImgIndex(0)
+  }, [item?.id])
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (open) {
+      if (!dialog.open) dialog.showModal()
+    } else {
+      if (dialog.open) dialog.close()
     }
-  }, [])
+  }, [open])
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [open])
+
+  if (!item) return null
+
+  const titleId = `${item.id}-case-modal-title`
+  const message = encodeURIComponent(`Hola, vi el caso "${item.shortTitle}" y quiero algo parecido.`)
+  const activeImage = item.images[activeImgIndex]
 
   return (
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onCancel={onClose}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) onClose()
+      }}
+      className="m-auto h-[90dvh] max-h-[720px] w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] max-w-4xl overflow-hidden rounded-2xl bg-white p-0 text-navy shadow-2xl backdrop:bg-black/70 outline-none"
+    >
+      <div className="flex h-full w-full flex-col md:flex-row overflow-hidden">
+        {/* Left Column (Desktop) / Top Column (Mobile): Gallery */}
+        <div className="relative h-60 shrink-0 overflow-hidden bg-navy md:h-full md:w-5/12 lg:w-1/2 flex flex-col justify-between">
+          {activeImage ? (
+            <div
+              role="img"
+              aria-label={activeImage.alt}
+              className={`relative flex-1 w-full bg-center ${
+                activeImage.kind === "photo" ? "bg-cover" : "bg-contain bg-no-repeat bg-white/95"
+              }`}
+              style={{ backgroundImage: `url("${activeImage.src}")` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:block hidden" />
+              {activeImage.label && (
+                <span className="absolute left-4 top-4 rounded-full bg-orange px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-md">
+                  {activeImage.label}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center bg-graphite text-white">
+              <Building2 className="size-16 text-orange/90 mb-3" strokeWidth={1.2} />
+              <p className="font-heading text-lg">{item.shortTitle}</p>
+              <p className="text-xs text-white/60 mt-1">Proyecto en ejecución sin imágenes públicas</p>
+            </div>
+          )}
+
+          {/* Gallery navigation tabs/dots if multiple images */}
+          {item.images.length > 1 && (
+            <div className="z-10 flex flex-wrap items-center justify-center gap-2 bg-black/65 p-3 backdrop-blur-sm">
+              {item.images.map((img, idx) => (
+                <button
+                  key={img.src}
+                  type="button"
+                  onClick={() => setActiveImgIndex(idx)}
+                  className={cn(
+                    "rounded-md border px-2.5 py-1 text-xs font-medium transition",
+                    idx === activeImgIndex
+                      ? "border-orange bg-orange text-white"
+                      : "border-white/20 bg-white/10 text-white/80 hover:bg-white/25"
+                  )}
+                >
+                  {img.label ? img.label : `Foto ${idx + 1}`}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Information, Full Deliverables, Fixed Footer */}
+        <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-white">
+          {/* Header - TITLE NEVER CUTS OFF */}
+          <div className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-navy/10 bg-white px-5 py-4 md:px-8 md:py-5">
+            <div className="flex-1 min-w-0 pr-2">
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {item.areas.map((area) => (
+                  <span
+                    key={area}
+                    className="rounded-full bg-navy/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-navy uppercase"
+                  >
+                    {PILLARS.find((p) => p.id === area)?.name.split(" ")[0]}
+                  </span>
+                ))}
+              </div>
+              <h2
+                id={titleId}
+                className="font-heading text-lg sm:text-xl md:text-2xl font-bold leading-snug text-navy text-balance"
+              >
+                {item.shortTitle}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar modal"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border border-navy/20 bg-mist/60 text-navy transition-colors hover:bg-navy hover:text-white"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4 overscroll-contain md:px-8 md:py-6 [-ms-overflow-style:none] [scrollbar-width:thin]">
+            <div>
+              <h3 className="font-heading text-sm md:text-base font-semibold text-navy">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-xs md:text-sm leading-relaxed text-muted-foreground">
+                <strong className="text-navy font-semibold">El proyecto: </strong>
+                {item.project}
+              </p>
+            </div>
+
+            {/* "Lo que hicimos específicamente" - exclusively here in the modal */}
+            <div className="border-t border-navy/10 pt-4">
+              <p className="mb-3 text-xs font-bold tracking-wider text-navy/70 uppercase">
+                Lo que hicimos específicamente:
+              </p>
+              <ul className="flex flex-col gap-2.5">
+                {item.work.map((task) => (
+                  <li key={task} className="flex items-start gap-2.5 text-xs md:text-sm text-navy/85">
+                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-orange" aria-hidden="true" />
+                    <span className="leading-relaxed">{task}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Footer CTA */}
+          <div className="z-10 shrink-0 border-t border-navy/10 bg-mist/70 p-3.5 backdrop-blur-sm md:px-8 md:py-4">
+            <div className="flex flex-col sm:flex-row gap-2.5 w-full">
+              <a
+                href={`${WHATSAPP_URL.split("?text=")[0]}?text=${message}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-orange px-4 py-2.5 font-heading text-xs md:text-sm font-semibold text-white shadow-md shadow-orange/20 transition hover:bg-[#ff7d36]"
+              >
+                <MessageCircle className="size-4 shrink-0" aria-hidden="true" />
+                <span>Quiero algo así para mi negocio</span>
+              </a>
+              <a
+                href={SCHEDULE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-navy/25 bg-white px-4 py-2.5 font-heading text-xs md:text-sm font-semibold text-navy transition hover:bg-navy hover:text-white"
+              >
+                <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
+                <span className="hidden sm:inline">Agendar llamada</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                CAROUSEL CARD                               */
+/* -------------------------------------------------------------------------- */
+
+function CaseCard({
+  item,
+  onClick,
+}: {
+  item: CaseStudy
+  onClick: () => void
+}) {
+  return (
     <article
-      ref={cardRef}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+      role="button"
       tabIndex={0}
-      aria-labelledby={`${item.id}-title`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onFocus={() => setHovered(true)}
-      onBlur={handleBlur}
-      onMouseDown={(e) => {
-        const target = e.target as HTMLElement
-        if (!target.closest("a, button")) {
-          if (document.activeElement && cardRef.current?.contains(document.activeElement)) {
-            (document.activeElement as HTMLElement).blur()
-          }
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onClick()
         }
       }}
-      className={`case-card group relative flex shrink-0 flex-col rounded-xl bg-graphite text-white outline-none transition-[width,opacity] duration-500 ease-out focus-within:z-10 focus-visible:ring-2 focus-visible:ring-orange ${
-        hovered ? "case-card-expanded" : ""
-      }`}
+      aria-label={`Ver ficha de ${item.shortTitle}`}
+      className="case-card group relative flex shrink-0 cursor-pointer select-none flex-col justify-start rounded-2xl border border-white/10 bg-graphite text-white outline-none transition-all duration-300 hover:border-orange/60"
     >
-      <div className="case-cover relative shrink-0">
+      <div className="case-cover pointer-events-none relative shrink-0 overflow-hidden rounded-t-2xl">
         <CaseCover item={item} />
       </div>
-      <div className="case-summary min-h-[9.5rem] shrink-0 p-5">
-        <div className="mb-3 flex flex-wrap gap-1.5">
+
+      <div className="pointer-events-none flex flex-1 flex-col p-5">
+        <div className="mb-2.5 flex flex-wrap gap-1">
           {item.areas.map((area) => (
             <span
               key={area}
-              className="rounded-full bg-white/10 px-2 py-1 text-[10px] text-white/75"
+              className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10px] text-white/80"
             >
               {PILLARS.find((pillar) => pillar.id === area)?.name.split(" ")[0]}
             </span>
           ))}
         </div>
-        <h3 id={`${item.id}-title`} className="font-display text-xl leading-tight">
+
+        <h3 className="font-heading text-base sm:text-lg font-semibold leading-snug text-white group-hover:text-orange transition-colors">
           {item.shortTitle}
         </h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/65">
+
+        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-white/70 line-clamp-3">
           {item.project}
         </p>
-      </div>
-      <div className="case-detail min-h-0 flex-1 bg-graphite p-5">
-        <div className="pt-4">
-          <h3 className="font-display text-lg">{item.title}</h3>
-          <p className="mt-3 text-sm font-semibold text-white">Lo que hicimos:</p>
-          <ul className="mt-1 space-y-1 text-sm text-white/75">
-            {item.work.map((entry) => (
-              <li key={entry} className="flex gap-2">
-                <span className="text-orange">•</span>
-                <span>{entry}</span>
-              </li>
-            ))}
-          </ul>
-          <a
-            href={`${WHATSAPP_URL.split("?text=")[0]}?text=${message}`}
-            onClick={(event) => event.stopPropagation()}
-            className="mt-4 inline-block text-sm font-semibold text-orange hover:underline"
-          >
-            Quiero algo así →
-          </a>
-        </div>
       </div>
     </article>
   )
 }
 
-function MobileCaseCard({ item }: { item: CaseStudy }) {
-  const message = encodeURIComponent(`Hola, vi el caso "${item.shortTitle}" y quiero algo parecido.`)
-  return (
-    <article className="flex w-[82vw] max-w-[340px] shrink-0 snap-center flex-col overflow-hidden rounded-2xl bg-graphite text-white shadow-xl">
-      <div className="relative h-48 w-full shrink-0">
-        <CaseCover item={item} />
-      </div>
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {item.areas.map((area) => (
-            <span
-              key={area}
-              className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-medium text-white/80"
-            >
-              {PILLARS.find((p) => p.id === area)?.name.split(" ")[0]}
-            </span>
-          ))}
-        </div>
-        <h3 className="font-heading text-lg font-semibold leading-snug">
-          {item.shortTitle}
-        </h3>
-        <p className="mt-2 text-xs leading-relaxed text-white/70 line-clamp-2">
-          {item.project}
-        </p>
+/* -------------------------------------------------------------------------- */
+/*                               MOBILE CAROUSEL                              */
+/* -------------------------------------------------------------------------- */
 
-        <div className="mt-3 border-t border-white/10 pt-3">
-          <p className="text-xs font-semibold text-white/90">Lo que hicimos:</p>
-          <ul className="mt-1 space-y-1 text-xs text-white/75">
-            {item.work.slice(0, 3).map((entry) => (
-              <li key={entry} className="flex gap-2">
-                <span className="text-orange">•</span>
-                <span className="line-clamp-1">{entry}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <a
-          href={`${WHATSAPP_URL.split("?text=")[0]}?text=${message}`}
-          className="mt-4 flex items-center justify-center gap-1.5 rounded-xl bg-orange py-2.5 text-xs font-semibold text-white shadow transition hover:bg-orange/90 active:scale-95"
-        >
-          <span>Quiero algo así</span>
-          <ChevronRight className="size-3.5" />
-        </a>
-      </div>
-    </article>
-  )
-}
-
-function MobileServices() {
+function MobileServices({ onSelect }: { onSelect: (item: CaseStudy) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -216,7 +337,7 @@ function MobileServices() {
     if (!el) return
     const cardWidth = el.firstElementChild
       ? (el.firstElementChild as HTMLElement).offsetWidth + 16
-      : 300
+      : 290
     const idx = Math.round(el.scrollLeft / cardWidth)
     setActiveIndex(Math.min(CASES.length - 1, Math.max(0, idx)))
   }
@@ -226,7 +347,7 @@ function MobileServices() {
     if (!el) return
     const cardWidth = el.firstElementChild
       ? (el.firstElementChild as HTMLElement).offsetWidth + 16
-      : 300
+      : 290
     el.scrollTo({ left: idx * cardWidth, behavior: "smooth" })
     setActiveIndex(idx)
   }
@@ -240,7 +361,7 @@ function MobileServices() {
         className="flex gap-4 overflow-x-auto px-1 pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {CASES.map((item) => (
-          <MobileCaseCard key={item.id} item={item} />
+          <CaseCard key={item.id} item={item} onClick={() => onSelect(item)} />
         ))}
       </div>
 
@@ -268,17 +389,27 @@ function MobileServices() {
   )
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               MAIN SERVICES                                */
+/* -------------------------------------------------------------------------- */
+
 export function Services() {
   const trackRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef({ active: false, startX: 0, startScroll: 0 })
+  const dragRef = useRef({ active: false, startX: 0, startScroll: 0, hasDragged: false })
   const [dragging, setDragging] = useState(false)
-  const pointerRef = useRef({ x: -1, y: -1, inside: false })
+  const [selectedCase, setSelectedCase] = useState<CaseStudy | null>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  const isHoveredRef = useRef(false)
   const loopWidthRef = useRef(0)
   const speedRef = useRef(0.08)
   const cases = CASES
 
   useEffect(() => {
-    // Only run continuous marquee loop on desktop (>= 1024px)
+    isHoveredRef.current = isHovered
+  }, [isHovered])
+
+  /* Desktop Continuous Marquee Loop */
+  useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) return
 
     let frame = 0
@@ -304,104 +435,103 @@ export function Services() {
       lastTime = time
       const loopWidth = loopWidthRef.current
 
-      if (track && loopWidth > track.clientWidth && !dragRef.current.active) {
-        const { x, inside } = pointerRef.current
-        let targetSpeed = BASE_SPEED
-
-        if (inside) {
-          const bounds = track.getBoundingClientRect()
-          const edgeZone = Math.max(120, Math.min(240, bounds.width * 0.2))
-          const distLeft = x - bounds.left
-          const distRight = bounds.right - x
-
-          if (distLeft >= 0 && distLeft <= edgeZone) {
-            // Near left edge: reverse / retroceder
-            const factor = 1 - Math.max(0, distLeft) / edgeZone
-            targetSpeed = -BASE_SPEED * (1.1 + factor * 2.2)
-          } else if (distRight >= 0 && distRight <= edgeZone) {
-            // Near right edge: accelerate forward / acelerar un poco
-            const factor = 1 - Math.max(0, distRight) / edgeZone
-            targetSpeed = BASE_SPEED * (1.1 + factor * 2.2)
-          } else {
-            // Center of track (hovering/reading cards): pause
-            targetSpeed = 0
-          }
-        }
-
-        // Smooth speed transition with lerp
-        const lerpFactor = Math.min(1, elapsed * 0.01)
-        speedRef.current += (targetSpeed - speedRef.current) * lerpFactor
-
-        if (Math.abs(speedRef.current) > 0.001) {
-          const next = track.scrollLeft + speedRef.current * elapsed
-          track.scrollLeft = ((next % loopWidth) + loopWidth) % loopWidth
-        }
+      // Pauses smoothly when user hovers over the track or is actively dragging
+      if (
+        track &&
+        loopWidth > track.clientWidth &&
+        !dragRef.current.active &&
+        !isHoveredRef.current
+      ) {
+        const next = track.scrollLeft + speedRef.current * elapsed
+        track.scrollLeft = ((next % loopWidth) + loopWidth) % loopWidth
       }
+
       frame = requestAnimationFrame(tick)
     }
     frame = requestAnimationFrame(tick)
 
-    const handleWindowBlur = () => {
-      pointerRef.current = { x: -1, y: -1, inside: false }
-    }
-    window.addEventListener("blur", handleWindowBlur)
-
     return () => {
       cancelAnimationFrame(frame)
       resizeObserver.disconnect()
-      window.removeEventListener("blur", handleWindowBlur)
     }
   }, [])
 
+  /* Drag Controls - Only captures pointer if mouse moved > 6px, preserving clicks */
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement
-    if (target.closest("a, button")) return
     const track = trackRef.current
     if (!track) return
-    dragRef.current = { active: true, startX: event.clientX, startScroll: track.scrollLeft }
-    setDragging(true)
-    speedRef.current = 0
-    track.setPointerCapture(event.pointerId)
+    dragRef.current = {
+      active: true,
+      startX: event.clientX,
+      startScroll: track.scrollLeft,
+      hasDragged: false,
+    }
   }
+
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     const track = trackRef.current
-    if (!track) return
-    pointerRef.current = { x: event.clientX, y: event.clientY, inside: true }
-    if (dragRef.current.active) {
+    if (!track || !dragRef.current.active) return
+    const diff = event.clientX - dragRef.current.startX
+
+    if (!dragRef.current.hasDragged && Math.abs(diff) > 6) {
+      dragRef.current.hasDragged = true
+      setDragging(true)
+      try {
+        track.setPointerCapture(event.pointerId)
+      } catch {}
+    }
+
+    if (dragRef.current.hasDragged) {
       const loopWidth = loopWidthRef.current
-      const next = dragRef.current.startScroll - (event.clientX - dragRef.current.startX)
+      const next = dragRef.current.startScroll - diff
       track.scrollLeft = loopWidth ? ((next % loopWidth) + loopWidth) % loopWidth : next
     }
   }
+
   const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
     const track = trackRef.current
-    if (track?.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId)
-    dragRef.current.active = false
-    setDragging(false)
-    if (event.pointerType !== "mouse") {
-      pointerRef.current = { x: -1, y: -1, inside: false }
+    if (track && track.hasPointerCapture(event.pointerId)) {
+      try {
+        track.releasePointerCapture(event.pointerId)
+      } catch {}
     }
+    dragRef.current.active = false
+    setTimeout(() => {
+      setDragging(false)
+      dragRef.current.hasDragged = false
+    }, 60)
   }
-  const onPointerLeave = () => {
-    if (!dragRef.current.active) pointerRef.current = { x: -1, y: -1, inside: false }
+
+  const onWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    // If the user scrolls horizontally with trackpad or Shift+wheel, scroll marquee smoothly
+    if (Math.abs(event.deltaX) > Math.abs(event.deltaY) || event.shiftKey) {
+      const delta = event.deltaX !== 0 ? event.deltaX : event.deltaY
+      const track = trackRef.current
+      if (track) {
+        const loopWidth = loopWidthRef.current
+        const next = track.scrollLeft + delta
+        track.scrollLeft = loopWidth ? ((next % loopWidth) + loopWidth) % loopWidth : next
+      }
+    }
+    // Normal vertical mouse wheel continues unhindered to smoothly scroll the page
   }
 
   return (
     <section
       aria-labelledby="casos-title"
       id="casos"
-      className="snap-section flex min-h-0 flex-col bg-mist px-6 py-[clamp(1rem,3.5dvh,2.5rem)] text-navy md:px-10"
+      className="flex min-h-0 flex-col overflow-hidden bg-mist px-6 py-12 text-navy md:px-10 md:py-16"
     >
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col">
-        <header className="mb-3 shrink-0 md:mb-4">
+        <header className="mb-6 shrink-0 md:mb-8">
           <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.15em] text-orange">
+            <p className="section-kicker mb-1.5">
               Casos de éxito
             </p>
-            <h2 id="casos-title" className="max-w-2xl font-display text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] leading-tight">
+            <h2 id="casos-title" className="max-w-3xl font-heading text-3xl sm:text-4xl md:text-5xl leading-tight tracking-[-.05em]">
               Negocios que escalaron con creato
             </h2>
-            <p className="mt-1.5 max-w-xl text-xs text-navy/70 sm:text-sm md:text-base">
+            <p className="mt-2 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-navy/70">
               Proyectos reales en las cinco áreas: del diseño de un local a un sistema de gestión.
             </p>
           </div>
@@ -414,27 +544,37 @@ export function Services() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          onPointerLeave={onPointerLeave}
-          onMouseMove={onPointerMove}
-          onMouseLeave={onPointerLeave}
-          className={`case-marquee hidden min-h-0 flex-1 lg:block ${
-            dragging ? "case-marquee-dragging" : ""
-          }`}
+          onWheel={onWheel}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className={cn(
+            "case-marquee hidden min-h-0 flex-1 lg:block py-2",
+            dragging && "case-marquee-dragging"
+          )}
         >
-          <div className="case-track flex h-full gap-4">
+          <div className="case-track flex h-full gap-5">
             {[...cases, ...cases].map((item, index) => (
-              <CaseCard key={`${item.id}-${index}`} item={item} />
+              <CaseCard
+                key={`${item.id}-${index}`}
+                item={item}
+                onClick={() => {
+                  if (!dragRef.current.hasDragged) {
+                    setSelectedCase(item)
+                  }
+                }}
+              />
             ))}
           </div>
         </div>
 
         {/* MOBILE CAROUSEL (< lg) */}
-        <MobileServices />
+        <MobileServices onSelect={(item) => setSelectedCase(item)} />
 
-        <div className="mt-4 flex shrink-0 items-center justify-between gap-4 border-t border-navy/15 pt-4">
-          <p className="font-display text-lg md:text-xl">¿Armaste algo parecido?</p>
+        {/* Bottom Banner */}
+        <div className="mt-8 flex shrink-0 items-center justify-between gap-4 border-t border-navy/15 pt-4">
+          <p className="font-heading text-base md:text-lg">¿Armaste algo parecido?</p>
           <a
-            className="rounded-full bg-orange px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange/85"
+            className="rounded-full bg-orange px-4 py-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-orange/85"
             href={`${WHATSAPP_URL.split("?text=")[0]}?text=${encodeURIComponent(
               "Hola, quiero contarte sobre mi proyecto."
             )}`}
@@ -443,10 +583,15 @@ export function Services() {
           </a>
         </div>
       </div>
+
+      {/* Full Detail Modal */}
+      {selectedCase && (
+        <CaseModal
+          item={selectedCase}
+          open={!!selectedCase}
+          onClose={() => setSelectedCase(null)}
+        />
+      )}
     </section>
   )
-}
-
-export function CaseArrow({ direction }: { direction: "left" | "right" }) {
-  return direction === "left" ? <ChevronLeft /> : <ChevronRight />
 }

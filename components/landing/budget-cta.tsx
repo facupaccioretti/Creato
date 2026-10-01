@@ -8,7 +8,9 @@ import {
   WHATSAPP_URL,
   SCHEDULE_URL,
   CONTACT_EMAIL,
+  CONTACT_DETAILS,
   PILLARS,
+  SOCIAL_LINKS,
 } from "@/lib/content"
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -58,18 +60,19 @@ export function BudgetCta() {
       <section
         id="presupuesto"
         aria-labelledby="presupuesto-title"
-        className="snap-section bg-muted px-6 py-[clamp(1rem,5dvh,3rem)] md:px-10"
+        className="relative overflow-hidden bg-muted px-6 py-20 md:px-10 md:py-28"
       >
         <div className="mx-auto flex h-full max-w-7xl flex-col justify-center">
           <div className="max-w-2xl">
-            <h2 id="presupuesto-title" className="text-3xl text-navy md:text-5xl">
+            <p className="section-kicker">Menos coordinación, más avance</p>
+            <h2 id="presupuesto-title" className="mt-3 text-4xl leading-none text-navy md:text-6xl">
               Trabajemos juntos
             </h2>
-            <p className="mt-3 text-base text-muted-foreground md:mt-4 md:text-lg">
+            <p className="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">
               Contanos los desafíos de tu negocio y te armamos una propuesta global para resolverlos todos.
             </p>
           </div>
-          <div className="mt-6 md:mt-10">
+          <div className="mt-10 md:mt-14">
             <div
               role="tablist"
               aria-label="Comparación de caminos"
@@ -114,9 +117,16 @@ export function BudgetCta() {
       <footer
         id="contacto"
         aria-labelledby="contacto-title"
-        className="snap-section on-dark border-t border-white/10 bg-navy px-6 py-12 text-white md:px-10 md:py-16"
+        className="on-dark relative overflow-hidden border-t border-white/10 bg-navy px-6 py-20 text-white md:px-10 md:py-28"
       >
         <div className="mx-auto flex h-full max-w-7xl flex-col justify-between">
+          <div className="mb-16 max-w-3xl border-b border-white/15 pb-10">
+            <h2 id="contacto-title" className="mt-3 text-4xl leading-none tracking-[-.065em] md:text-6xl">
+              Hagamos que tu negocio se mueva.
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-white/65">
+            </p>
+          </div>
           <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 lg:gap-8">
             {/* Col 1: Logo & Redes Sociales */}
             <div className="lg:col-span-3">
@@ -125,7 +135,7 @@ export function BudgetCta() {
               </a>
               <div className="mt-5 flex items-center gap-3 text-white/75">
                 <a
-                  href="https://instagram.com"
+                  href={SOCIAL_LINKS.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-full p-1.5 transition-colors hover:bg-white/10 hover:text-orange"
@@ -134,7 +144,7 @@ export function BudgetCta() {
                   <InstagramIcon className="size-5" />
                 </a>
                 <a
-                  href="https://linkedin.com"
+                  href={SOCIAL_LINKS.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-full p-1.5 transition-colors hover:bg-white/10 hover:text-orange"
@@ -247,24 +257,24 @@ export function BudgetCta() {
                   rel="noopener noreferrer"
                   className="font-heading text-base font-bold text-white transition-colors hover:text-orange"
                 >
-                  +54 9 351 XXX XXXX
+                  {CONTACT_DETAILS.phoneLabel}
                 </a>
               </div>
               <div className="mt-3.5 flex flex-col gap-1.5 text-xs text-white/70 leading-relaxed">
                 <p>
-                  <strong className="font-semibold text-white">Córdoba Capital y Buenos Aires:</strong> Lunes a Viernes de 9:00 a 18:00 hs
+                  <strong className="font-semibold text-white">{CONTACT_DETAILS.hours.split(":")[0]}:</strong>{" "}{CONTACT_DETAILS.hours.split(":").slice(1).join(":")}
                 </p>
                 <p>
-                  <strong className="font-semibold text-white">Atención comercial:</strong> Respuesta ágil en el día
+                  <strong className="font-semibold text-white">{CONTACT_DETAILS.response.split(":")[0]}:</strong>{" "}{CONTACT_DETAILS.response.split(":").slice(1).join(":")}
                 </p>
                 <p>
-                  <strong className="font-semibold text-white">Proyectos y obras:</strong> Cobertura presencial en Córdoba y región centro
+                  <strong className="font-semibold text-white">{CONTACT_DETAILS.coverage.split(":")[0]}:</strong>{" "}{CONTACT_DETAILS.coverage.split(":").slice(1).join(":")}
                 </p>
                 <p>
-                  <strong className="font-semibold text-white">Tecnología y gestión:</strong> Operatoria remota en todo el país
+                  <strong className="font-semibold text-white">{CONTACT_DETAILS.remote.split(":")[0]}:</strong>{" "}{CONTACT_DETAILS.remote.split(":").slice(1).join(":")}
                 </p>
                 <p>
-                  <strong className="font-semibold text-white">Pliegos y administración:</strong> {CONTACT_EMAIL}
+                  <strong className="font-semibold text-white">{CONTACT_DETAILS.administration}:</strong> {CONTACT_EMAIL}
                 </p>
               </div>
             </div>
@@ -300,9 +310,9 @@ function Comparison({
 }) {
   return (
     <div
-      className={`rounded-2xl p-5 md:p-7 ${
+      className={`rounded-3xl border p-6 md:p-8 ${
         icon === "check" ? "on-dark bg-navy text-white" : "bg-white text-navy"
-      } ${className ?? ""}`}
+      } ${icon === "check" ? "border-navy" : "border-navy/10 shadow-[0_18px_60px_rgba(23,23,23,.07)]"} ${className ?? ""}`}
     >
       <h3 className="font-heading text-lg font-semibold">{title}</h3>
       <ul className="mt-4 flex flex-col gap-2.5 text-sm md:gap-3 md:text-base">

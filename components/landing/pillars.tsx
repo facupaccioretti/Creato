@@ -3,7 +3,11 @@
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { ArrowRight, ChevronRight } from "lucide-react"
+import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { PILLARS, type Pillar } from "@/lib/content"
+import { MOTION } from "@/lib/animation"
 import { cn } from "@/lib/utils"
 import { PillarCard, PillarModal } from "./pillar-card"
 
@@ -20,6 +24,18 @@ export function Pillars() {
 
   const [isInView, setIsInView] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+
+  useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    gsap.registerPlugin(ScrollTrigger)
+    gsap.from("[data-pillar-reveal]", {
+      y: 44,
+      opacity: 0,
+      stagger: MOTION.stagger,
+      ease: MOTION.ease.out,
+      scrollTrigger: { trigger: sectionRef.current, start: "top 65%" },
+    })
+  }, { scope: sectionRef })
 
   const pauseAutoPlayTemporarily = () => {
     setIsPaused(true)
@@ -86,22 +102,24 @@ export function Pillars() {
   }
 
   return (
-    <section ref={sectionRef} aria-labelledby="pilares-title" id="pilares" className="bg-white px-6 py-[clamp(1rem,5dvh,3rem)] md:px-10">
+    <section ref={sectionRef} aria-labelledby="pilares-title" id="pilares" className="relative overflow-hidden bg-white px-6 py-20 md:px-10 md:py-28">
       <div className="mx-auto flex h-full max-w-7xl flex-col">
         <header className="shrink-0">
-          <h2 id="pilares-title" className="text-3xl text-navy md:text-5xl">
+          <p className="section-kicker">Cinco áreas, una misma dirección</p>
+          <h2 id="pilares-title" className="mt-3 max-w-3xl text-4xl leading-none text-navy md:text-6xl">
             Evolucionamos cada área de tu negocio
           </h2>
-          <p className="mt-2 max-w-md text-muted-foreground short:text-sm">
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground short:text-sm">
             Un equipo preparado para acompañar cada desafío de tu negocio.
           </p>
         </header>
 
         {/* DESKTOP ACCORDION (lg and up) */}
-        <ul className="mt-6 hidden h-[34rem] shrink-0 gap-3 overflow-hidden lg:flex lg:flex-row">
+        <ul className="mt-8 hidden h-[34rem] shrink-0 gap-3 overflow-hidden lg:flex lg:flex-row">
           {PILLARS.map((pillar) => (
             <li
               key={pillar.id}
+              data-pillar-reveal
               className="pillar-item h-full min-h-0 min-w-0 flex-1 transition-[flex] duration-500 ease-out"
             >
               <PillarCard pillar={pillar} className="h-full min-h-0" />
@@ -110,7 +128,7 @@ export function Pillars() {
         </ul>
 
         {/* MOBILE & TABLET ADAPTIVE INTERFACE (< lg) */}
-        <div className="mt-5 flex flex-col gap-4 lg:hidden">
+        <div className="mt-6 flex flex-col gap-4 lg:hidden">
           {/* Horizontal Chips Navigation with visual scroll cue */}
           <div className="relative">
             <div
@@ -165,6 +183,7 @@ export function Pillars() {
 
           {/* Active Area Touch Card */}
           <div
+            data-pillar-reveal
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             onClick={() => {
@@ -206,13 +225,13 @@ export function Pillars() {
 
               {/* Services list preview */}
               <ul className="mt-3 flex flex-col gap-1.5 border-t border-white/15 pt-3">
-                {activePillar.services.slice(0, 3).map((service) => (
+                {activePillar.services.map((service) => (
                   <li key={service} className="flex items-start gap-2 text-xs text-white/85">
                     <span
                       className="mt-1.5 size-1.5 shrink-0 rounded-full bg-orange"
                       aria-hidden="true"
                     />
-                    <span className="line-clamp-1">{service}</span>
+                    <span className="line-clamp-2">{service}</span>
                   </li>
                 ))}
               </ul>

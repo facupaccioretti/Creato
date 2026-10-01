@@ -1,14 +1,8 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Poppins } from 'next/font/google'
+import '@fontsource-variable/inter'
+import '@fontsource/poppins/600.css'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['600'],
-  variable: '--font-poppins',
-})
 
 export const metadata: Metadata = {
   title: 'creato | Soluciones para tu negocio. Un solo presupuesto.',
@@ -36,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es-AR" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="es-AR">
       <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}

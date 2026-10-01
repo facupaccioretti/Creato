@@ -1,14 +1,14 @@
 # Documentación de Estructura y Arquitectura — Creato
 
-Esta documentación detalla la arquitectura técnica, la jerarquía de componentes, el flujo de navegación y la capa de datos de la landing page de **Creato**.
+Esta documentación detalla la arquitectura técnica, la jerarquía de componentes, el flujo de navegación, la capa de datos y el comportamiento interactivo/responsivo de la landing page de **Creato**.
 
 ---
 
 ## 1. Visión General del Proyecto
 
-**Creato** es una landing page comercial orientada a comunicar una propuesta de valor integral para empresas y comercios: resolver múltiples áreas de negocio (arquitectura comercial, eventos, diseño/marca, tecnología y gestión) bajo **un único interlocutor y un único presupuesto**.
+**Creato** es una plataforma web comercial orientada a comunicar una propuesta de valor integral para empresas y comercios: resolver múltiples áreas de negocio (arquitectura comercial, eventos y producción, diseño/marca, tecnología y sistemas, y gestión operativa) bajo **un único interlocutor y un único presupuesto**.
 
-- **Enfoque de diseño:** Landing page fluida de alto impacto visual, optimizada para desktop y mobile, con transiciones interactivas, modales de detalle, carruseles de casos de éxito y llamados a la acción (CTAs) directos hacia WhatsApp y Calendly.
+- **Enfoque de diseño:** Landing page fluida de alto impacto visual, con soporte completo para desktop y mobile, transiciones interactivas calibradas, modales modulares sin trampas de scroll, carruseles optimizados para touch/mouse y canales de contacto directo (WhatsApp y Calendly).
 - **Idioma del sitio:** Español (`es-AR`).
 
 ---
@@ -17,11 +17,13 @@ Esta documentación detalla la arquitectura técnica, la jerarquía de component
 
 | Herramienta / Librería | Versión | Propósito |
 | :--- | :--- | :--- |
-| **Next.js** | 16.3.x (App Router) | Framework React, renderizado híbrido y optimización de assets. |
-| **React** | 19.x | Biblioteca base para componentes UI y estado cliente. |
-| **Tailwind CSS** | 4.x | Motor de estilos utilitarios y variables temáticas en CSS. |
-| **TypeScript** | 5.7.x | Tipado estático y modelos de datos. |
-| **Lucide React** | 1.16.x | Conjunto de iconos vectoriales. |
+| **Next.js** | 16.3.x (App Router) | Framework React con arquitectura basada en componentes cliente y servidor. |
+| **React** | 19.x | Biblioteca base para componentes UI, estado y ciclo de vida. |
+| **Tailwind CSS** | 4.x | Motor de estilos utilitarios y variables temáticas en CSS (`@theme inline`). |
+| **TypeScript** | 5.7.x | Tipado estático estricto y modelos de datos de dominio. |
+| **GSAP & @gsap/react** | 3.15.x / 2.1.x | Motor de animaciones fluidas y ScrollTrigger para transiciones al scroll. |
+| **Lenis** | 1.3.x | Smooth scrolling con aceleración inercial y control granular en modales. |
+| **Lucide React** | 1.16.x | Conjunto de iconos vectoriales SVG. |
 | **@vercel/analytics** | 1.6.x | Medición de tráfico y analíticas en producción. |
 
 ---
@@ -31,139 +33,135 @@ Esta documentación detalla la arquitectura técnica, la jerarquía de component
 ```text
 Creato/
 ├── app/
-│   ├── globals.css              # Variables de tema, fuentes, utilidades y animaciones personalizadas
-│   ├── layout.tsx               # Root Layout: fuentes (Poppins, Inter), meta tags, viewport y Analytics
-│   └── page.tsx                 # Página principal (Single Page Landing)
+│   ├── globals.css              # Variables de tema, reglas base, animaciones y parches accesibles (<dialog>)
+│   ├── layout.tsx               # Root Layout: fuentes locales (Poppins, Inter), meta tags, viewport y Lenis
+│   └── page.tsx                 # Página principal que orquesta secciones y el widget flotante
 ├── components/
 │   ├── landing/
-│   │   ├── hero.tsx             # Portada a pantalla completa con navegación superior dinámica
-│   │   ├── pillars.tsx          # Sección "Áreas" con acordeón interactivo de 5 pilares
-│   │   ├── pillar-card.tsx      # Tarjeta individual de pilar y modal nativo (<dialog>) con detalle
-│   │   ├── one-team.tsx         # Sección "Un solo equipo" y carrusel de profesionales
-│   │   ├── services.tsx         # Sección "Casos de éxito" con carrusel infinito / arrastrable (marquee)
-│   │   ├── process.tsx          # Sección "Metodología" en 4 etapas
-│   │   ├── budget-cta.tsx       # Sección "Trabajemos juntos" (comparativa) + "¿Cómo seguimos?" (contacto)
+│   │   ├── hero.tsx             # Portada a pantalla completa con navegación superior flotante y reveal GSAP
+│   │   ├── pillars.tsx          # Sección "Áreas": acordeón elástico (desktop) y chips + swipe card (mobile)
+│   │   ├── pillar-card.tsx      # Tarjeta de pilar y modal nativo (<dialog>) con encabezado y footer fijos
+│   │   ├── one-team.tsx         # Sección "Un solo equipo" y carrusel de especialistas con placeholders
+│   │   ├── services.tsx         # Sección "Casos de éxito": marquee interactivo (desktop) y snap-scroll (mobile)
+│   │   ├── process.tsx          # Sección "Metodología" en 4 etapas con línea de progreso scrubbed
+│   │   ├── budget-cta.tsx       # Sección "Trabajemos juntos" (comparativa) y footer corporativo (#contacto)
 │   │   ├── contact-links.tsx    # Botones reutilizables de WhatsApp, Calendly y correo electrónico
 │   │   ├── help-panel.tsx       # Asistente de frases para conectar necesidades con áreas
-│   │   ├── site-footer.tsx      # Pie de página institucional y copyright
-│   │   ├── section-carousel.tsx # Contenedor de scroll y snapping de secciones
-│   │   ├── section-dots.tsx     # Indicador de navegación lateral por puntos (opcional / desacoplable)
-│   │   └── whatsapp-float.tsx   # Botón flotante persistente de WhatsApp
+│   │   ├── scroll-progress.tsx  # Barra superior fija indicadora de progreso de scroll
+│   │   ├── smooth-scroll.tsx    # Proveedor global de Lenis + GSAP con navegación ancla suave
+│   │   └── whatsapp-float.tsx   # Widget flotante no invasivo dual (WhatsApp + Calendly) con scroll-awareness
 │   └── ui/
 │       └── button.tsx           # Componente base de botón estilizado con CVA
 ├── data/                        # Documentación complementaria y briefs de contenido
 ├── lib/
-│   ├── content.ts               # Fuente única de verdad: textos, pilares, casos de éxito, datos de contacto
+│   ├── animation.ts             # Constantes centrales de animación (MOTION: duration, ease, stagger)
+│   ├── content.ts               # Fuente única de verdad: textos, pilares, casos de éxito y datos de contacto
 │   └── utils.ts                 # Utilidad `cn` (clsx + tailwind-merge)
 └── public/
-    ├── images/                  # Imágenes de pilares, equipo, servicios y casos de estudio
+    ├── images/                  # Imágenes optimizadas de pilares, equipo, servicios y casos de estudio
     └── icons                    # Favicons y logos en formatos vectoriales y rasterizados
 ```
 
 ---
 
-## 4. Estructura de la Landing Page (`app/page.tsx`)
+## 4. Estructura y Flujo de la Landing Page (`app/page.tsx`)
 
-La página se organiza en una sola ruta vertical dividida en secciones lógicas, la mayoría configuradas con altura de pantalla completa (`snap-section` / `min-height: 100dvh`):
+La página se organiza en una sola ruta vertical coordinada con navegación fluida y sin saltos bruscos:
 
 ```
-┌────────────────────────────────────────────────────────┐
-│ 1. Hero (#inicio)                                      │
-│    - Navbar autohiding con enlaces ancla               │
-│    - Tipografía identificatoria "creato."              │
-│    - Título: "Muchas soluciones, un solo contacto."     │
-├────────────────────────────────────────────────────────┤
-│ 2. Pilares (#pilares)                                  │
-│    - Acordeón interactivo horizontal (desktop)         │
-│    - 5 áreas de negocio con modal expansible           │
-├────────────────────────────────────────────────────────┤
-│ 3. Un solo equipo (#equipo)                            │
-│    - Bloque de valor diferencial vs. contratar suelto  │
-│    - Carrusel paginado de perfiles profesionales       │
-├────────────────────────────────────────────────────────┤
-│ 4. Casos de éxito (#casos)                             │
-│    - Marquee arrastrable con casos reales              │
-│    - Tarjetas con galería de fotos/capturas y enlace   │
-├────────────────────────────────────────────────────────┤
-│ 5. Metodología (#proceso)                              │
-│    - 4 pasos numerados desde la reunión a la entrega   │
-├────────────────────────────────────────────────────────┤
-│ 6. Presupuesto & Contacto (#presupuesto / #contacto)   │
-│    - Comparativa: "Camino tradicional" vs "creato"    │
-│    - Pasos de cierre y enlaces directos de contacto    │
-│    - Footer institucional                              │
-└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│ 1. Barra de progreso superior (ScrollProgress)                        │
+├────────────────────────────────────────────────────────────────────────┤
+│ 2. Hero (#inicio)                                                      │
+│    - Navbar flotante con desenfoque de fondo y autocompactado         │
+│    - Tipografía identificatoria "creato." con acento naranja           │
+│    - Título: "Muchas soluciones, un solo contacto."                    │
+│    - Asistente "¿Cómo podemos ayudarte?" integrado                     │
+├────────────────────────────────────────────────────────────────────────┤
+│ 3. Áreas (#pilares)                                                    │
+│    - "Evolucionamos cada área de tu negocio"                           │
+│    - Desktop: Acordeón horizontal elástico con hover / selección       │
+│    - Mobile: Chips horizontales auto-desplazables + tarjeta swipeable  │
+│    - Modal (<dialog>): Encabezado fijo, scroll de texto y footer CTA   │
+├────────────────────────────────────────────────────────────────────────┤
+│ 4. Un solo equipo (#equipo)                                            │
+│    - Propuesta de valor centralizada vs. contratar proveedores sueltos │
+│    - Imagen corporativa y beneficios de comunicación única             │
+│    - Subsección "Muchos profesionales": Tarjetas con placeholders      │
+│      de especialistas, avatares, roles y paginador interactivo         │
+├────────────────────────────────────────────────────────────────────────┤
+│ 5. Casos de éxito (#casos) — Negocios que escalaron con creato         │
+│    - Altura vertical optimizada y compacta para pantallas estándar     │
+│    - Desktop: Marquee continuo con aceleración/reversa por bordes      │
+│    - Mobile: Carrusel táctil nativo con snap, peek y contador          │
+├────────────────────────────────────────────────────────────────────────┤
+│ 6. Metodología (#proceso)                                              │
+│    - 4 etapas secuenciales claras con línea animada por scroll         │
+│    - Transición limpia hacia el área de contacto                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 7. Presupuesto & Contacto (#presupuesto / #contacto)                   │
+│    - Comparativa: "Camino tradicional" vs. "Experiencia creato"       │
+│    - Hub de contacto corporativo integral en columnas (estilo Autocity)│
+│    - Teléfono/WhatsApp, horarios de atención y cobertura geográfica    │
+│    - Subfooter de copyright y legales                                  │
+├────────────────────────────────────────────────────────────────────────┤
+│ * Widget Flotante Global (WhatsAppFloat)                               │
+│    - Desktop: Dual pill elegante (WhatsApp + Agenda)                   │
+│    - Mobile: Mini-pill ultra compacto (~135px) con atenuación y hide   │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. Descripción Detallada de Componentes
+## 5. Descripción Detallada de Componentes y Optimizaciones
 
 ### 5.1. Encabezado y Navegación (`components/landing/hero.tsx`)
-- **Fondo inmersivo:** Utiliza `next/image` con `fill` y superposición en capas de gradientes oscuros sobre la paleta `--color-navy`.
-- **Barra de navegación dinámica:** Oculta o muestra la barra con transiciones según la posición del scroll (`window.scrollY < 40`).
-- **Anclajes rápidos:** Enlaces a `#pilares`, `#casos`, `#proceso`, `#equipo` y `#contacto`.
+- **Fondo inmersivo:** Utiliza `next/image` con `priority` y capas de gradientes oscuros en `--color-navy`.
+- **Barra de navegación flotante:** Píldora moderna con borde sutil y desenfoque `backdrop-blur-xl`, que se compacta al scrollear hacia abajo.
+- **Anclajes rápidos:** Enlaces suaves a `#pilares`, `#casos`, `#proceso`, `#equipo` y `#contacto`.
+- **Entrada cinemática:** Revelación GSAP con stagger para título y descripción.
 
 ### 5.2. Pilares de Servicio (`pillars.tsx` y `pillar-card.tsx`)
-- **Diseño acordeón:** En pantallas de escritorio, los 5 pilares se distribuyen en una fila elástica. Al hacer hover o focus en uno, se expande a `flex: 4` mientras los demás se comprimen a `flex: 1`.
-- **Modal accesible:** Utiliza el elemento estándar de HTML `<dialog>` con bloqueo de scroll en el `body`, soporte para tecla `Escape` y accesibilidad para teclado.
-- **Sincronización por URL:** Escucha cambios en el hash de la URL (`#arquitectura`, `#tecnologia`, etc.) para abrir automáticamente el modal correspondiente si el usuario ingresa con un enlace directo.
+- **Desktop (>= lg):** Acordeón horizontal elástico. Al posicionar el cursor sobre una tarjeta, se expande armónicamente mientras las demás se contraen.
+- **Mobile (< lg):**
+  - **Chips horizontales:** Barra de píldoras (`01 Arquitectura`, `02 Eventos`, etc.) con indicador de scroll derecho.
+  - **Rotación automática controlada:** Avanza cada 4.5 segundos únicamente cuando la sección está visible (`IntersectionObserver`), pausándose de inmediato ante interacción.
+- **Modal de Detalle (`PillarModal`):**
+  - **Integración con SmoothScroll:** Pausa automáticamente el scroll Lenis mientras el modal está abierto para evitar scroll de fondo indeseado, y lo reanuda al cerrar.
 
-### 5.3. Un solo equipo (`components/landing/one-team.tsx`)
-- **Propuesta de valor:** Contrapone la fricción de contratar múltiples proveedores dispersos frente al modelo centralizado.
-- **Carrusel paginado:** Distribuye los 8 roles profesionales en páginas de a 4 elementos con animación direccional (izquierda/derecha).
+### 5.3. Un solo equipo y Especialistas (`components/landing/one-team.tsx`)
+- **Propuesta de valor:** Bloque superior con título "Un solo equipo", beneficios clave e imagen institucional.
+- **Placeholders de profesionales:** Bloque "Muchos profesionales" con carrusel paginado que muestra las tarjetas de especialistas con:
+  - Avatar placeholder circular con filtro estilizado.
+  - Nombre del profesional ("Nombre profesional").
+  - Especialidad / Rol de la lista de áreas (`TEAM_ROLES`).
+  - Descripción breve del aporte técnico.
+  - Indicador de estado y controles numéricos de página (`01 / 02`).
 
 ### 5.4. Casos de Éxito (`components/landing/services.tsx`)
-- **Marquee infinito interactivo:** Desplazamiento continuo mediante `requestAnimationFrame` que detecta la cercanía del cursor a los bordes para acelerar o pausar.
-- **Soporte táctil y arrastre (drag-to-scroll):** Implementado con Pointer Events nativos (`setPointerCapture`), compatible tanto con mouse como en pantallas táctiles móviles.
-- **Tarjetas expandibles:** Al hacer hover, la tarjeta se ensancha mostrando el alcance técnico del proyecto y un botón con mensaje predeterminado a WhatsApp.
+- **Huella vertical compacta:** Se redujo el espaciado vertical (`py-12 md:py-16`) y la altura de las tarjetas (`height: 420px`), garantizando que la sección completa se visualice sin desbordar pantallas de laptops estándar.
+- **Desktop (>= lg):**
+  - **Marquee continuo:** Animación `requestAnimationFrame` con aceleración en extremos y pausa de lectura en el centro.
+  - **Hover Intent (130 ms):** Evita aperturas involuntarias al scrollear rápidamente por encima.
+- **Mobile (< lg):**
+  - Deslizamiento táctil con `snap-mandatory` y peek de la siguiente tarjeta.
 
-### 5.5. Proceso de Trabajo (`components/landing/process.tsx`)
-- Estructura limpia de 4 columnas en grid con números en gran escala (`01`, `02`, `03`, `04`) y llamada directa a agendar el paso 1.
-
-### 5.6. Comparativa y Cierre (`components/landing/budget-cta.tsx`)
-- **Tabs para móviles:** En pantallas reducidas permite alternar entre "El camino tradicional" y "La experiencia creato". En desktop se muestran ambas columnas en paralelo.
-- **Bloque de conversión final:** Detalla 3 pasos de incorporación, botones de acción inmediata (WhatsApp y Calendly) y el pie de página (`SiteFooter`).
+### 5.5. Smooth Scrolling Persistente (`components/landing/smooth-scroll.tsx`)
+- **Lenis + GSAP:** Integración de aceleración inercial en desktop mediante `gsap.ticker`.
+- **Navegación por anclas suave:** Intercepta clics en enlaces hash (`#pilares`, `#casos`, `#contacto`, etc.) y aplica desplazamiento interpolado con offset compensatorio para la barra superior.
+- **Fallback nativo:** En mobile y con preferencias de reducción de movimiento, preserva `scroll-behavior: smooth` nativo sin interferencias.
 
 ---
 
 ## 6. Fuente de Datos Centralizada (`lib/content.ts`)
 
-Todo el contenido estático, enlaces y textos se encuentran desacoplados en `lib/content.ts` para facilitar su actualización sin tocar componentes JSX:
+Todo el contenido estático, enlaces y textos se encuentran desacoplados en `lib/content.ts`:
 
-- **Canales de contacto:**
-  - `WHATSAPP_URL`: Número y mensaje inicial prefijado.
-  - `SCHEDULE_URL`: Enlace a Calendly para agendado de reuniones.
-  - `CONTACT_EMAIL`: Dirección de contacto institucional.
-- **Contenidos de negocio:**
-  - `PILLARS`: Lista tipada (`Pillar`) con los 5 ejes, descripciones, imágenes y lista de servicios.
-  - `CASES`: Casos reales documentados con áreas vinculadas, capturas de pantalla o fotografías y descripciones.
-  - `STEPS`: Pasos de la metodología de trabajo.
+- **Canales de contacto:** `WHATSAPP_URL`, `SCHEDULE_URL`, `CONTACT_EMAIL`, `SOCIAL_LINKS`, `CONTACT_DETAILS`.
+- **Estructura de negocio:**
+  - `HERO`: Títulos, descripción y enlaces del menú.
+  - `TEAM_COPY` y `TEAM_ROLES`: Datos de la sección de equipo y especialistas.
+  - `PILLARS`: Datos tipados con los 5 ejes, imágenes, descripciones y servicios.
+  - `CASES`: Proyectos reales documentados con capturas y galerías fotográficas.
+  - `STEPS`: Los 4 pasos de la metodología de trabajo.
   - `ON_YOUR_OWN` y `WITH_US`: Puntos de dolor y beneficios para la sección comparativa.
-  - `BUDGET_STEPS`: Pasos finales antes del inicio del proyecto.
-
----
-
-## 7. Identidad Visual y Sistema de Estilos (`globals.css`)
-
-El proyecto utiliza Tailwind CSS v4 con variables semánticas personalizadas:
-
-| Variable | Valor | Aplicación |
-| :--- | :--- | :--- |
-| `--color-navy` | `#171717` | Fondo principal oscuro, botones secundarios y textos principales. |
-| `--color-graphite` | `#242424` | Fondos de tarjetas y contenedores intermedios. |
-| `--color-mist` | `#f4f2ee` | Fondo claro alternativo para secciones de casos y descansos visuales. |
-| `--color-orange` | `#e96d45` | Color de acento primario, puntos de foco, viñetas y botones de acción principal. |
-| `--background` | `#faf9f6` | Tono blanco cálido base de la aplicación. |
-
-### Tipografías
-- **Textos de encabezados:** `Poppins` (definida en `--font-heading`).
-- **Textos de cuerpo:** `Inter` (definida en `--font-sans`).
-
----
-
-## 8. Guía de Mantenimiento
-
-1. **Editar datos o textos:** Modificar directamente en `lib/content.ts`.
-2. **Agregar un nuevo caso de estudio:** Añadir un nuevo objeto al arreglo `CASES` en `lib/content.ts` con sus imágenes correspondientes en `public/images/casos/`.
-3. **Modificar información de contacto:** Actualizar las constantes `WHATSAPP_URL`, `SCHEDULE_URL` o `CONTACT_EMAIL` en `lib/content.ts`.
