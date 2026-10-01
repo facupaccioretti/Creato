@@ -1,25 +1,60 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Image from "next/image"
-
-const sectionLinks = [
-  ["Áreas", "#pilares"],
-  ["Casos", "#casos"],
-  ["Proceso", "#proceso"],
-  ["Equipo", "#equipo"],
-  ["Contacto", "#contacto"],
-]
+import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
+import { useRef } from "react"
+import { HERO } from "@/lib/content"
+import { MOTION } from "@/lib/animation"
+import { HelpPanel } from "./help-panel"
 
 export function Hero() {
-  const [showNavbar, setShowNavbar] = useState(true)
+  const heroRef = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    const handleScroll = () => setShowNavbar(window.scrollY < 40)
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    gsap.from("[data-hero-reveal]", {
+      yPercent: 115,
+      opacity: 0,
+      duration: MOTION.duration.reveal,
+      ease: MOTION.ease.out,
+      stagger: MOTION.stagger,
+      delay: 0.15,
+    })
+  }, { scope: heroRef })
 
-  return <header className="on-dark relative flex h-dvh flex-col overflow-hidden bg-navy text-white"><Image src="/images/hero.png" alt="" fill priority sizes="100vw" className="object-cover" /><div className="absolute inset-0 bg-navy/60" aria-hidden="true" /><div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/50 to-transparent" aria-hidden="true" /><nav aria-label="Secciones principales" className={`absolute inset-x-0 top-0 z-10 transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}><div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-6 md:px-10"><a href="#inicio" className="font-heading text-lg font-semibold tracking-[-0.04em] text-white">creato<span className="text-orange">.</span></a><div className="flex items-center gap-4 md:gap-6">{sectionLinks.map(([label, href]) => <a key={href} href={href} className="hidden text-sm text-white/80 transition-colors hover:text-white sm:inline">{label}</a>)}<a href="#contacto" className="whitespace-nowrap text-sm font-medium text-white/90 underline decoration-orange decoration-2 underline-offset-4 transition-colors hover:text-white">Trabajá con nosotros</a></div></div></nav><div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-6 pb-24 md:px-10 md:pb-32"><div className="mb-5 -translate-y-6 font-heading text-6xl font-semibold tracking-[-0.08em] text-white sm:text-8xl lg:text-9xl">creato<span className="text-orange">.</span></div><h1 className="max-w-4xl text-4xl leading-[1.08] text-white sm:text-6xl lg:text-7xl">Muchas soluciones, un solo contacto.</h1><p className="mt-6 max-w-2xl text-lg text-white/85">Somos un equipo de profesionales que une sus talentos para brindar soluciones integrales. Nos especializamos en arquitectura, diseño, sistemas, tecnología, eventos y gestión, operando como un unico punto de contacto para que canalices todas tus necesidades a traves de un solo proveedor.</p></div></header>
+  return (
+    <header ref={heroRef} className="hero-shell on-dark relative isolate flex min-h-dvh h-auto md:h-dvh flex-col justify-between overflow-hidden bg-navy text-white">
+      <Image src="/images/hero.png" alt="" fill priority sizes="100vw" className="hero-image object-cover" />
+      <div className="hero-noise absolute inset-0" aria-hidden="true" />
+      <div className="hero-orb hero-orb-one" aria-hidden="true" />
+      <div className="hero-orb hero-orb-two" aria-hidden="true" />
+
+      {/* Hero Content Container - Proportioned to never cut off */}
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-6 pb-8 pt-28 sm:px-10 sm:pb-12 md:pb-14 md:pt-32">
+        <div className="overflow-hidden">
+          <p data-hero-reveal className="font-heading text-[clamp(2.75rem,6.5vw,5.5rem)] font-semibold leading-[0.88] tracking-[-0.08em] text-white">
+            creato<span className="text-orange">.</span>
+          </p>
+        </div>
+
+        <h1 className="mt-3 sm:mt-4 max-w-4xl overflow-hidden text-[clamp(1.75rem,3.8vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.045em] text-white">
+          <span data-hero-reveal className="inline-block text-balance">{HERO.title}</span>
+        </h1>
+
+        <div data-hero-reveal className="mt-4 sm:mt-5 grid max-w-4xl gap-4 sm:gap-6 border-t border-white/15 pt-4 sm:pt-5 md:grid-cols-[1fr_auto] md:items-end">
+          <p className="max-w-2xl text-xs sm:text-sm md:text-base leading-relaxed text-white/80">
+            {HERO.description}
+          </p>
+          <div className="shrink-0">
+            <HelpPanel />
+          </div>
+        </div>
+      </div>
+
+      <a href="#pilares" className="absolute bottom-6 right-6 z-10 hidden items-center gap-2 text-xs font-semibold uppercase tracking-[.18em] text-white/60 transition hover:text-white md:flex">
+        <span className="grid size-9 place-items-center rounded-full border border-white/25">↓</span> Explora
+      </a>
+    </header>
+  )
 }
-
