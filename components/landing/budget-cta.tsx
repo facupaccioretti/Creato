@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Check, X, Phone, Mail, MessageCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
 import {
   ON_YOUR_OWN,
   WITH_US,
@@ -53,7 +54,6 @@ function LinkedinIcon({ className }: { className?: string }) {
 
 export function BudgetCta() {
   const [tab, setTab] = useState<"traditional" | "experience">("experience")
-  const list = tab === "traditional" ? ON_YOUR_OWN : WITH_US
 
   return (
     <>
@@ -64,11 +64,10 @@ export function BudgetCta() {
       >
         <div className="mx-auto flex h-full max-w-7xl flex-col justify-center">
           <div className="max-w-2xl">
-            <p className="section-kicker">Menos coordinación, más avance</p>
             <h2 id="presupuesto-title" className="mt-3 text-4xl leading-none text-navy md:text-6xl">
               Trabajemos juntos
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">
+            <p className="mt-5 text-base leading-relaxed text-orange md:text-lg">
               Contanos los desafíos de tu negocio y te armamos una propuesta global para resolverlos todos.
             </p>
           </div>
@@ -76,13 +75,18 @@ export function BudgetCta() {
             <div
               role="tablist"
               aria-label="Comparación de caminos"
-              className="mb-4 flex rounded-full bg-white p-1 md:hidden"
+              className="mb-4 flex rounded-full border border-navy/10 bg-white p-1 md:hidden shadow-sm"
             >
               <button
                 role="tab"
                 aria-selected={tab === "traditional"}
                 onClick={() => setTab("traditional")}
-                className="flex-1 rounded-full px-3 py-2 text-sm aria-selected:bg-navy aria-selected:text-white"
+                className={cn(
+                  "flex-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-200",
+                  tab === "traditional"
+                    ? "bg-navy text-white shadow-sm"
+                    : "text-navy/70 hover:text-navy"
+                )}
               >
                 El camino tradicional
               </button>
@@ -90,7 +94,12 @@ export function BudgetCta() {
                 role="tab"
                 aria-selected={tab === "experience"}
                 onClick={() => setTab("experience")}
-                className="flex-1 rounded-full px-3 py-2 text-sm aria-selected:bg-navy aria-selected:text-white"
+                className={cn(
+                  "flex-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-200",
+                  tab === "experience"
+                    ? "bg-navy text-white shadow-sm"
+                    : "text-navy/70 hover:text-navy"
+                )}
               >
                 La experiencia creato
               </button>
@@ -100,13 +109,13 @@ export function BudgetCta() {
                 title="El camino tradicional"
                 items={ON_YOUR_OWN}
                 icon="x"
-                className="hidden md:block"
+                className={tab === "traditional" ? "block" : "hidden md:block"}
               />
               <Comparison
                 title="La experiencia creato"
                 items={WITH_US}
                 icon="check"
-                itemsOverride={list}
+                className={tab === "experience" ? "block" : "hidden md:block"}
               />
             </div>
           </div>
@@ -129,7 +138,7 @@ export function BudgetCta() {
           </div>
           <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 lg:gap-8">
             {/* Col 1: Logo & Redes Sociales */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
               <a href="#inicio" className="font-heading text-3xl font-semibold tracking-[-0.04em] text-white">
                 creato<span className="text-orange">.</span>
               </a>
@@ -213,7 +222,7 @@ export function BudgetCta() {
             </div>
 
             {/* Col 4: Contacto */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               <h3 className="font-heading text-base font-bold text-white">Contacto</h3>
               <ul className="mt-4 flex flex-col gap-2.5 text-sm text-white/70">
                 <li>
@@ -239,7 +248,7 @@ export function BudgetCta() {
                 <li>
                   <a
                     href={`mailto:${CONTACT_EMAIL}`}
-                    className="break-all transition-colors hover:text-orange"
+                    className="whitespace-nowrap transition-colors hover:text-orange"
                   >
                     {CONTACT_EMAIL}
                   </a>
@@ -300,34 +309,50 @@ function Comparison({
   items,
   icon,
   className,
-  itemsOverride,
 }: {
   title: string
   items: string[]
   icon: "x" | "check"
   className?: string
-  itemsOverride?: string[]
 }) {
+  const isCreato = icon === "check"
+
   return (
     <div
-      className={`rounded-3xl border p-6 transition-all duration-300 md:p-8 ${
-        icon === "check"
+      className={cn(
+        "rounded-3xl border p-6 transition-all duration-300 md:p-8",
+        isCreato
           ? "on-dark border-white/15 bg-graphite text-white shadow-[0_20px_50px_rgba(0,0,0,0.35),0_0_35px_rgba(233,109,69,0.18)] hover:-translate-y-1 hover:border-orange/60 hover:shadow-[0_25px_60px_rgba(0,0,0,0.45),0_0_45px_rgba(233,109,69,0.25)]"
-          : "border-navy/10 bg-white text-navy shadow-[0_18px_60px_rgba(23,23,23,.07)]"
-      } ${className ?? ""}`}
+          : "border-navy/15 bg-white text-navy shadow-[0_18px_60px_rgba(23,23,23,.07)] hover:-translate-y-1",
+        className
+      )}
     >
-      <h3 className="font-heading text-lg font-semibold">{title}</h3>
-      <ul className="mt-4 flex flex-col gap-2.5 text-sm md:gap-3 md:text-base">
-        {(itemsOverride ?? items).map((item) => (
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-heading text-lg font-semibold">{title}</h3>
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold",
+            isCreato
+              ? "bg-orange/20 text-orange"
+              : "bg-red-500/10 text-red-600"
+          )}
+        >
+          {isCreato ? "Creato" : "Tradicional"}
+        </span>
+      </div>
+      <ul className="mt-5 flex flex-col gap-2.5 text-sm md:gap-3 md:text-base">
+        {items.map((item) => (
           <li key={item} className="flex items-start gap-3">
-            <span aria-hidden="true">
-              {icon === "check" ? (
-                <Check className="mt-0.5 size-4 shrink-0 text-orange" />
+            <span aria-hidden="true" className="mt-0.5 shrink-0">
+              {isCreato ? (
+                <Check className="size-4 text-orange" />
               ) : (
-                <X className="mt-0.5 size-4 shrink-0 text-graphite/50" />
+                <X className="size-4 text-red-500/80" />
               )}
             </span>
-            {item}
+            <span className={isCreato ? "text-white/90" : "text-navy/85"}>
+              {item}
+            </span>
           </li>
         ))}
       </ul>

@@ -4,29 +4,92 @@ import { ArrowRight } from "lucide-react"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import { STEPS } from "@/lib/content"
 import { MOTION } from "@/lib/animation"
+import { cn } from "@/lib/utils"
 
 export function Process() {
   const sectionRef = useRef<HTMLElement>(null)
+  const [activeMobileStep, setActiveMobileStep] = useState<number>(0)
+  const [isMobile, setIsMobile] = useState<boolean>(false)
+  const stepRefs = useRef<(HTMLLIElement | null)[]>([])
 
   useGSAP(() => {
     if (window.innerWidth < 1024 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     gsap.registerPlugin(ScrollTrigger)
-    gsap.fromTo("[data-process-line]", { scaleX: 0 }, {
-      scaleX: 1,
-      ease: "none",
-      scrollTrigger: { trigger: sectionRef.current, start: "top 70%", end: "bottom 35%", scrub: true },
-    })
     gsap.from("[data-process-step]", {
       y: 34,
       opacity: 0,
       stagger: MOTION.stagger * 2,
       ease: MOTION.ease.out,
-      scrollTrigger: { trigger: sectionRef.current, start: "top 62%" },
+      clearProps: "all",
+      scrollTrigger: { trigger: sectionRef.current, start: "top 68%", once: true },
     })
   }, { scope: sectionRef })
+
+  // Detección de dispositivo móvil
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize, { passive: true })
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  // En móvil ÚNICAMENTE: los números brillan al acercarse al centro del viewport
+  useEffect(() => {
+    if (!isMobile) return
+
+    let ticking = false
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const section = sectionRef.current
+          if (!section) {
+            ticking = false
+            return
+          }
+
+          const sectionRect = section.getBoundingClientRect()
+          // Si la sección no está en pantalla, no calculamos
+          if (sectionRect.bottom < 80 || sectionRect.top > window.innerHeight - 80) {
+            ticking = false
+            return
+          }
+
+          const viewportCenter = window.innerHeight / 2
+          let closestIdx = 0
+          let minDistance = Infinity
+
+          stepRefs.current.forEach((el, idx) => {
+            if (!el) return
+            const rect = el.getBoundingClientRect()
+            const elCenter = rect.top + rect.height / 2
+            const distance = Math.abs(viewportCenter - elCenter)
+
+            if (distance < minDistance) {
+              minDistance = distance
+              closestIdx = idx
+            }
+          })
+
+          setActiveMobileStep(closestIdx)
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll()
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [isMobile])
 
   return (
     <section ref={sectionRef} aria-labelledby="proceso-title" id="proceso" className="relative overflow-hidden bg-white px-6 py-20 md:px-10 md:py-28">
@@ -38,32 +101,72 @@ export function Process() {
       <div className="relative mx-auto max-w-7xl">
         <header className="grid gap-5 border-b border-navy/15 pb-8 lg:grid-cols-[.85fr_1.15fr] lg:items-end">
           <div>
-            <p className="section-kicker">De la idea a la obra</p>
             <h2 id="proceso-title" className="mt-3 text-4xl leading-none text-navy md:text-6xl">
               Nuestra metodología
             </h2>
           </div>
-          <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
-            Un proceso visible, coordinado y sin partes sueltas. Cada decisión suma al mismo resultado.
-          </p>
         </header>
 
         <div className="relative mt-12">
-          <div className="absolute left-0 right-0 top-12 hidden h-px bg-navy/15 lg:block" />
-          <div data-process-line className="absolute left-0 right-0 top-12 hidden h-px origin-left bg-orange lg:block" />
+          {/* Barra conectora siempre naranja (desconectada del scroll) */}
+          <div className="absolute left-0 right-0 top-12 hidden h-0.5 bg-orange lg:block shadow-[0_0_8px_rgba(233,109,69,0.3)]" />
           <ol className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-            {STEPS.map((step, index) => (
-              <li data-process-step key={step.title} className="group relative border-l border-navy/15 pl-5 sm:pl-6 lg:border-l-0 lg:pl-0">
-                <span className="relative z-10 mb-8 flex size-10 items-center justify-center rounded-full border border-navy/20 bg-white font-heading text-xs font-semibold text-navy transition group-hover:border-orange group-hover:bg-orange group-hover:text-white lg:mb-12">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <p className="font-heading text-5xl leading-none tracking-[-.08em] text-orange/25 transition group-hover:text-orange/70">
-                  0{index + 1}
-                </p>
-                <h3 className="mt-4 text-xl leading-tight text-navy">{step.title}</h3>
-                <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">{step.text}</p>
-              </li>
-            ))}
+            {STEPS.map((step, index) => {
+              const isMobileActive = isMobile && activeMobileStep === index
+
+              return (
+                <li
+                  ref={(el) => {
+                    stepRefs.current[index] = el
+                  }}
+                  data-process-step
+                  key={step.title}
+                  onClick={() => {
+                    if (isMobile) setActiveMobileStep(index)
+                  }}
+                  className={cn(
+                    "group relative pl-5 sm:pl-6 transition-all duration-300 lg:border-l-0 lg:pl-0 lg:cursor-default",
+                    isMobileActive
+                      ? "border-l-2 border-orange"
+                      : "border-l border-navy/15",
+                    isMobile && "cursor-pointer"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "relative z-10 mb-8 flex size-10 items-center justify-center rounded-full font-heading text-xs font-semibold transition-all duration-300 lg:mb-12",
+                      // Estilos para PC (100% idénticos al original con hover de mouse)
+                      "lg:border lg:border-navy/20 lg:bg-white lg:text-navy lg:shadow-none lg:scale-100 lg:group-hover:border-orange lg:group-hover:bg-orange lg:group-hover:text-white",
+                      // Estilos exclusivos para móvil (brillo al centro del viewport)
+                      isMobileActive
+                        ? "border-orange bg-orange text-white shadow-[0_0_20px_rgba(233,109,69,0.65)] scale-110"
+                        : "border border-navy/20 bg-white text-navy"
+                    )}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <p
+                    className={cn(
+                      "font-heading text-5xl leading-none tracking-[-.08em] transition-all duration-300",
+                      // Estilos para PC (hover clásico)
+                      "lg:text-orange/25 lg:scale-100 lg:drop-shadow-none lg:group-hover:text-orange/70",
+                      // Estilos exclusivos para móvil
+                      isMobileActive
+                        ? "text-orange scale-105 drop-shadow-[0_0_14px_rgba(233,109,69,0.45)]"
+                        : "text-orange/25"
+                    )}
+                  >
+                    0{index + 1}
+                  </p>
+                  <h3 className="mt-4 text-xl leading-tight text-navy">
+                    {step.title}
+                  </h3>
+                  <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+                    {step.text}
+                  </p>
+                </li>
+              )
+            })}
           </ol>
         </div>
 

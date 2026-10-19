@@ -10,6 +10,7 @@ import { PILLARS, type Pillar } from "@/lib/content"
 import { MOTION } from "@/lib/animation"
 import { cn } from "@/lib/utils"
 import { PillarCard, PillarModal } from "./pillar-card"
+import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
 
 export function Pillars() {
   const [activeMobileIndex, setActiveMobileIndex] = useState(0)
@@ -26,7 +27,7 @@ export function Pillars() {
   const sectionRef = useRef<HTMLElement>(null)
 
   useGSAP(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (window.innerWidth < 1024 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     gsap.registerPlugin(ScrollTrigger)
     gsap.from("[data-pillar-reveal]", {
       y: 44,
@@ -105,11 +106,10 @@ export function Pillars() {
     <section ref={sectionRef} aria-labelledby="pilares-title" id="pilares" className="relative overflow-hidden bg-white px-6 py-20 md:px-10 md:py-28">
       <div className="mx-auto flex h-full max-w-7xl flex-col">
         <header className="shrink-0">
-          <p className="section-kicker">Cinco áreas, una misma dirección</p>
           <h2 id="pilares-title" className="mt-3 max-w-3xl text-4xl leading-none text-navy md:text-6xl">
             Evolucionamos cada área de tu negocio
           </h2>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground short:text-sm">
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-orange short:text-sm">
             Un equipo preparado para acompañar cada desafío de tu negocio.
           </p>
         </header>
@@ -183,7 +183,6 @@ export function Pillars() {
 
           {/* Active Area Touch Card */}
           <div
-            data-pillar-reveal
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             onClick={() => {
@@ -192,15 +191,17 @@ export function Pillars() {
             }}
             className="group relative flex min-h-[420px] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl bg-navy p-6 text-white shadow-xl transition-all"
           >
-            <Image
+            <ImageWithSkeleton
+              key={activePillar.image}
               src={activePillar.image}
               alt={activePillar.alt}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
+              skeletonClassName="bg-white/10"
             />
             <div
-              className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/25"
+              className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/25 pointer-events-none"
               aria-hidden="true"
             />
 

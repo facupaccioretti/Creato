@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { useRef } from "react"
@@ -25,7 +25,15 @@ export function Hero() {
 
   return (
     <header ref={heroRef} className="hero-shell on-dark relative isolate flex min-h-dvh h-auto md:h-dvh flex-col justify-between overflow-hidden bg-navy text-white">
-      <Image src="/images/hero.png" alt="" fill priority sizes="100vw" className="hero-image object-cover" />
+      <ImageWithSkeleton
+        src="/images/hero.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="hero-image object-cover"
+        skeletonClassName="bg-white/5"
+      />
       <div className="hero-noise absolute inset-0" aria-hidden="true" />
       <div className="hero-orb hero-orb-one" aria-hidden="true" />
       <div className="hero-orb hero-orb-two" aria-hidden="true" />

@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import Image from "next/image"
 import { CalendarDays, MessageCircle, X } from "lucide-react"
 import { SCHEDULE_URL, WHATSAPP_URL, type Pillar } from "@/lib/content"
 import { cn } from "@/lib/utils"
+import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
 export function PillarModal({
   pillar,
   open,
@@ -51,14 +51,15 @@ export function PillarModal({
       <div className="flex h-full w-full flex-col md:flex-row overflow-hidden">
         {/* Desktop Left Column: Fixed Cover Image */}
         <div className="relative hidden h-full w-5/12 shrink-0 overflow-hidden bg-navy md:block lg:w-1/2">
-          <Image
+          <ImageWithSkeleton
             src={pillar.image}
             alt={pillar.alt}
             fill
             sizes="(min-width: 1024px) 45vw, 40vw"
             className="object-cover"
+            skeletonClassName="bg-white/10"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
           <div className="absolute bottom-6 left-6 right-6">
             <span className="font-heading text-xs font-bold uppercase tracking-wider text-orange">
               {pillar.number} · {pillar.name.split(" ")[0]}
@@ -75,13 +76,14 @@ export function PillarModal({
           <div className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-navy/10 bg-white px-5 py-4 md:px-8 md:py-5">
             <div className="flex items-center gap-3 min-w-0">
               {/* Mobile-only compact thumbnail so the screen starts with context, not a giant blocking photo */}
-              <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-navy/10 md:hidden">
-                <Image
+              <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border border-navy/10 md:hidden bg-mist">
+                <ImageWithSkeleton
                   src={pillar.image}
                   alt={pillar.alt}
                   fill
                   sizes="48px"
                   className="object-cover"
+                  skeletonClassName="bg-navy/10"
                 />
               </div>
               <div className="min-w-0">
@@ -225,15 +227,16 @@ export function PillarCard({
         role="button"
         tabIndex={0}
       >
-        <Image
+        <ImageWithSkeleton
           src={pillar.image}
           alt={pillar.alt}
           fill
           sizes="(min-width: 1024px) 60vw, (min-width: 768px) 50vw, 100vw"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+          skeletonClassName="bg-white/10"
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none"
           aria-hidden="true"
         />
         <div

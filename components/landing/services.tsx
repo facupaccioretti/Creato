@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from "react"
 import { CASES, PILLARS, SCHEDULE_URL, WHATSAPP_URL, type CaseStudy } from "@/lib/content"
 import { cn } from "@/lib/utils"
+import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
 
 /* -------------------------------------------------------------------------- */
 /*                                CASE COVER                                  */
@@ -53,23 +54,32 @@ function CaseCover({ item, className }: { item: CaseStudy; className?: string })
 
   return (
     <div
-      role="img"
-      aria-label={image.alt}
       className={cn(
-        "relative h-full min-h-0 shrink-0 bg-white bg-center transition-all duration-700",
-        image.kind === "photo" ? "bg-cover" : "bg-contain bg-no-repeat",
+        "relative h-full min-h-0 shrink-0 overflow-hidden bg-graphite transition-all duration-700",
         className
       )}
-      style={{ backgroundImage: `url("${image.src}")` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+      <ImageWithSkeleton
+        key={image.src}
+        src={image.src}
+        alt={image.alt}
+        fill
+        loading="eager"
+        sizes="(max-width: 768px) 85vw, 340px"
+        className={cn(
+          "transition-all duration-700",
+          image.kind === "photo" ? "object-cover" : "object-contain bg-white/95"
+        )}
+        skeletonClassName="bg-white/10"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent pointer-events-none" />
       {image.label && (
-        <span className="absolute left-3 top-3 rounded-full bg-orange px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-md">
+        <span className="absolute left-3 top-3 z-10 rounded-full bg-orange px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-md">
           {image.label}
         </span>
       )}
       {item.images.length > 1 && (
-        <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[10px] text-white/80 backdrop-blur-sm">
+        <span className="absolute right-3 top-3 z-10 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[10px] text-white/80 backdrop-blur-sm">
           {active + 1}/{item.images.length}
         </span>
       )}
@@ -135,16 +145,22 @@ export function CaseModal({
         <div className="relative h-60 shrink-0 overflow-hidden bg-navy md:h-full md:w-5/12 lg:w-1/2 flex flex-col justify-between">
           {activeImage ? (
             <div
-              role="img"
-              aria-label={activeImage.alt}
-              className={`relative flex-1 w-full bg-center ${
-                activeImage.kind === "photo" ? "bg-cover" : "bg-contain bg-no-repeat bg-white/95"
+              className={`relative flex-1 w-full bg-graphite overflow-hidden ${
+                activeImage.kind === "photo" ? "" : "bg-white/95"
               }`}
-              style={{ backgroundImage: `url("${activeImage.src}")` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:block hidden" />
+              <ImageWithSkeleton
+                key={activeImage.src}
+                src={activeImage.src}
+                alt={activeImage.alt}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className={activeImage.kind === "photo" ? "object-cover" : "object-contain"}
+                skeletonClassName="bg-white/10"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent md:block hidden pointer-events-none" />
               {activeImage.label && (
-                <span className="absolute left-4 top-4 rounded-full bg-orange px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-md">
+                <span className="absolute left-4 top-4 z-10 rounded-full bg-orange px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-md">
                   {activeImage.label}
                 </span>
               )}
@@ -526,12 +542,12 @@ export function Services() {
         <header className="mb-6 shrink-0 md:mb-8">
           <div>
             <p className="section-kicker mb-1.5">
-              Casos de éxito
+              
             </p>
             <h2 id="casos-title" className="max-w-3xl font-heading text-3xl sm:text-4xl md:text-5xl leading-tight tracking-[-.05em]">
               Negocios que escalaron con creato
             </h2>
-            <p className="mt-2 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-navy/70">
+            <p className="mt-2 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-orange">
               Proyectos reales en las cinco áreas: del diseño de un local a un sistema de gestión.
             </p>
           </div>

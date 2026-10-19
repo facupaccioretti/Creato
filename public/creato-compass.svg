@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <g fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Borde exterior simple (Naranja - Superior Derecha) -->
+    <circle cx="50" cy="50" r="40" stroke="#f05a28" stroke-dasharray="110 141.33" transform="rotate(235 50 50)" />
+    
+    <!-- Borde exterior simple (Blanco - Inferior Izquierda para contraste) -->
+    <circle cx="50" cy="50" r="40" stroke="#ffffff" stroke-dasharray="110 141.33" transform="rotate(55 50 50)" />
+
+    <!-- Marcas de los puntos cardinales -->
+    <line x1="50" y1="18" x2="50" y2="26" stroke="#ffffff" />
+    <line x1="82" y1="50" x2="74" y2="50" stroke="#ffffff" />
+    <line x1="50" y1="82" x2="50" y2="74" stroke="#f05a28" />
+    <line x1="18" y1="50" x2="26" y2="50" stroke="#f05a28" />
+
+    <!-- Aguja y centro de la brújula (Mitad superior blanca) -->
+    <path d="M 45 45 L 70 30 L 55 55" stroke="#ffffff" />
+    <path d="M 45 45 A 7 7 0 0 1 55 55" stroke="#ffffff" />
+
+    <!-- Aguja y centro de la brújula (Mitad inferior naranja) -->
+    <path d="M 45 45 L 30 70 L 55 55" stroke="#f05a28" />
+    <path d="M 55 55 A 7 7 0 0 1 45 45" stroke="#f05a28" />
+  </g>
+</svg>
