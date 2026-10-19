@@ -2,7 +2,7 @@ export const COMPANY_NAME = "creato"
 
 export const WHATSAPP_URL =
   "https://wa.me/5491124870328?text=Hola%2C%20quiero%20presupuestar%20con%20ustedes"
-export const SCHEDULE_URL = "https://calendly.com/PLACEHOLDER"
+export const SCHEDULE_URL = "https://calendly.com/creatoconsultora/30min"
 export const CONTACT_EMAIL = "creatoconsultora@gmail.com"
 export const SOCIAL_LINKS = {
   instagram: "https://instagram.com",

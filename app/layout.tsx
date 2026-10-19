@@ -11,11 +11,11 @@ export const metadata: Metadata = {
   generator: 'v0.app',
   icons: {
     icon: [
-      { url: '/creato-brujula-base.ico', sizes: 'any' },
-      { url: '/creato-brujula-base.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico?v=3' },
+      { url: '/creato-brujula-base.ico?v=3' },
     ],
-    shortcut: '/creato-brujula-base.ico',
-    apple: '/creato-brujula-base.ico',
+    shortcut: '/favicon.ico?v=3',
+    apple: '/favicon.ico?v=3',
   },
 }
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Check, X, Phone, Mail, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -291,9 +292,23 @@ export function BudgetCta() {
 
           {/* Subfooter inferior */}
           <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              © {new Date().getFullYear()} creato.com.ar Todos los derechos reservados · Términos y Condiciones · Privacidad
-            </p>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>© {new Date().getFullYear()} creatoconsultora.com.ar Todos los derechos reservados</span>
+              <span aria-hidden="true">·</span>
+              <Link
+                href="/terminos"
+                className="transition-colors hover:text-white underline-offset-4 hover:underline"
+              >
+                Términos y Condiciones
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link
+                href="/privacidad"
+                className="transition-colors hover:text-white underline-offset-4 hover:underline"
+              >
+                Privacidad
+              </Link>
+            </div>
             <p className="font-heading text-xs font-semibold tracking-wider uppercase text-white/70">
               Muchas soluciones, un solo contacto.
             </p>
